@@ -1,12 +1,13 @@
-import { NextFunction, Request, Response } from 'express'
+import { Request, Response } from 'express'
 
 import prisma from '../db/prisma'
-import { encrypt, decrypt } from '../helpers/encrypt'
 import cookieToken from '../utils/cookieToken'
+import { transformUser } from '../transformers'
+import { encrypt, decrypt } from '../helpers/encrypt'
 
 
-export const register = async (req: Request, res: Response, next: NextFunction) => {
-    const { name, email, password } = req.body
+export const register = async (req: Request, res: Response) => {
+    const { name, email, password, role } = req.body
 
     try {
         if (!name || !email || !password) {
@@ -22,8 +23,9 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
         const user = await prisma.user.create({
             data: {
                 name,
-                email,
+                email: email.toLowerCase(),
                 password: encrypt(password),
+                role
             }
         })
 
@@ -34,7 +36,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
         
         return res.status(201).json({
             success: true,
-            data: user,
+            data: transformUser(user),
         })
 
         
@@ -46,7 +48,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     }
 }
 
-export const login = async (req: Request, res: Response, next: NextFunction) => {
+export const login = async (req: Request, res: Response) => {
     try {
         const {email, password} = req.body
 
