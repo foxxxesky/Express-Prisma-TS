@@ -1,6 +1,7 @@
+import { User } from 'types'
 import { Response } from 'express'
 import getToken from '../helpers/getJwtToken'
-import { User } from 'types'
+import { transformUser } from '../transformers'
 
 const cookieToken = (user: User, res: Response) => {
     const token = getToken(user.id)
@@ -13,7 +14,7 @@ const cookieToken = (user: User, res: Response) => {
     res.status(200).cookie('auth_token', token, options).json({
         success: true,
         token, 
-        user 
+        user: transformUser(user) 
     })
 }
 
